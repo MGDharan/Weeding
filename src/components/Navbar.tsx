@@ -72,7 +72,7 @@ export const Navbar: React.FC = () => {
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             {navLinks.map((link) => {
               const isActive = activeSection === link.href.substring(1);
               return (
@@ -102,7 +102,7 @@ export const Navbar: React.FC = () => {
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gold hover:text-cream-100 hover:bg-gold/10 focus:outline-none transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gold hover:text-cream-100 hover:bg-gold/10 focus:outline-none transition-colors"
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -112,7 +112,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Slide-down Overlay Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-30 bg-maroon-dark/95 backdrop-blur-xl md:hidden flex flex-col justify-center items-center px-6 pt-20 pb-10 transition-all duration-300">
+        <div className="fixed inset-0 z-30 bg-maroon-dark/95 backdrop-blur-xl lg:hidden flex flex-col justify-center items-center px-6 pt-20 pb-10 transition-all duration-300">
           <div className="text-center mb-8">
             <h3 className="font-serif text-3xl text-gold gold-text-gradient mb-1">
               {weddingConfig.couple.brideName} & {weddingConfig.couple.groomName}

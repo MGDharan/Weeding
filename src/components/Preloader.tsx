@@ -7,6 +7,67 @@ interface PreloaderProps {
   onComplete: () => void;
 }
 
+/* ---------- Hanging gift image (thread + dangling ornament) ---------- */
+
+interface HangingGiftProps {
+  src: string;
+  alt: string;
+  threadLength: number;
+  widthClass: string;
+  delay: number;
+  swingDuration?: number;
+}
+
+const HangingGift: React.FC<HangingGiftProps> = ({
+  src,
+  alt,
+  threadLength,
+  widthClass,
+  delay,
+  swingDuration = 4.5,
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, delay }}
+      className="flex flex-col items-center pointer-events-none"
+      style={{ transformOrigin: 'top center' }}
+    >
+      {/* Thread */}
+      <motion.div
+        animate={{ rotate: [-3, 3, -3] }}
+        transition={{ duration: swingDuration, repeat: Infinity, ease: 'easeInOut' }}
+        className="flex flex-col items-center"
+        style={{ transformOrigin: 'top center' }}
+      >
+        <div className="w-2.5 h-2.5 rounded-full bg-gold/80 border border-gold-light/60 shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
+        <div
+          className="w-px bg-gradient-to-b from-gold/80 via-gold/40 to-gold/70"
+          style={{ height: threadLength }}
+        />
+      </motion.div>
+
+      {/* Hanging ornament */}
+      <motion.div
+        animate={{ rotate: [-4, 4, -4] }}
+        transition={{ duration: swingDuration, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: 'top center' }}
+        className="-mt-px"
+      >
+        <motion.img
+          src={src}
+          alt={alt}
+          draggable={false}
+          className={`${widthClass} w-auto h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)] select-none`}
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+};
+
 /* ---------- Decorative ring with ornamental dots ---------- */
 
 const MonogramRing = ({ progress }: { progress: number }) => {
@@ -122,6 +183,38 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           <div className="absolute -bottom-32 -left-32 w-[28rem] h-[28rem] rounded-full bg-maroon-light/40 blur-[140px]" />
           <div className="absolute inset-0 mandala-pattern opacity-30" />
 
+          {/* ---- Hanging gift images from the top ---- */}
+          <div className="absolute inset-x-0 top-0 z-[5] flex items-start justify-between pointer-events-none px-3 sm:px-10">
+            <HangingGift
+              src="/hagging/hanging-1.png"
+              alt="Hanging wedding ornament"
+              threadLength={48}
+              widthClass="w-12 sm:w-24"
+              delay={0.5}
+            />
+            <HangingGift
+              src="/hagging/hanging-2.png"
+              alt="Hanging wedding ornament"
+              threadLength={70}
+              widthClass="w-16 sm:w-36"
+              delay={0.75}
+            />
+            <HangingGift
+              src="/hagging/hanging-3.png"
+              alt="Hanging wedding ornament"
+              threadLength={56}
+              widthClass="w-14 sm:w-28"
+              delay={0.9}
+            />
+            <HangingGift
+              src="/hagging/hanging-4.png"
+              alt="Hanging wedding ornament"
+              threadLength={82}
+              widthClass="w-20 sm:w-40"
+              delay={0.65}
+            />
+          </div>
+
           {/* ---- Couple welcoming guests (groom left, bride right) ---- */}
           <div className="absolute inset-x-0 bottom-0 z-[5] flex items-end justify-between pointer-events-none px-2 sm:px-8">
             <motion.div
@@ -164,7 +257,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           <div className="absolute inset-5 sm:inset-7 rounded-[1.4rem] border border-gold/10 pointer-events-none" />
 
           {/* ---- Content ---- */}
-          <div className="relative z-10 flex flex-col items-center text-center px-6 pb-28 pt-8 sm:pb-16">
+          <div className="relative z-10 flex flex-col items-center text-center px-6 pb-28 pt-28 sm:pt-16 lg:pt-20">
 
             <motion.p
               initial={{ opacity: 0, letterSpacing: '0.1em' }}

@@ -9,6 +9,13 @@ interface SynthNode {
   stop: () => void;
 }
 
+// Global hook so other components (e.g. the video player) can pause/stop the
+// background music. Set by the MusicPlayer on mount.
+let stopMusicExternal: (() => void) | null = null;
+export const stopBackgroundMusic = (): void => {
+  stopMusicExternal?.();
+};
+
 export const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [audioAvailable, setAudioAvailable] = useState<boolean>(false);
@@ -19,6 +26,17 @@ export const MusicPlayer: React.FC = () => {
   const synthNodesRef = useRef<SynthNode[]>([]);
   const loopTimerRef = useRef<number | null>(null);
   const stoppedRef = useRef(false);
+  const autoStartedRef = useRef(false);
+  const isPlayingRef = useRef(false);
+  const audioAvailableRef = useRef(false);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    audioAvailableRef.current = audioAvailable;
+  }, [audioAvailable]);
 
   // Detect whether the audio file actually exists on the server
   useEffect(() => {
@@ -51,7 +69,32 @@ export const MusicPlayer: React.FC = () => {
     };
   }, []);
 
-  // Play a single plucked note with a gentle envelope + subtle shimmer
+  // Auto-play background music on the first user interaction (browsers block
+  // audio before a user gesture). Also respect the persisted preference.
+  useEffect(() => {
+    const stored = sessionStorage.getItem('wedding_audio_playing');
+    if (stored === 'false') return;
+
+    const start = () => {
+      if (autoStartedRef.current || isPlayingRef.current) return;
+      autoStartedRef.current = true;
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+      window.removeEventListener('touchstart', start);
+      startPlayback();
+    };
+
+    window.addEventListener('pointerdown', start, { once: true });
+    window.addEventListener('keydown', start, { once: true });
+    window.addEventListener('touchstart', start, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+      window.removeEventListener('touchstart', start);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const playNote = (ctx: AudioContext, dest: AudioNode, freq: number, start: number, dur: number) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -171,35 +214,53 @@ export const MusicPlayer: React.FC = () => {
     synthMasterRef.current = null;
   };
 
-  const toggleMusic = () => {
-    if (!isPlaying) {
-      const audio = audioRef.current;
-      if (audio && audioAvailable) {
-        audio
-          .play()
-          .then(() => {
-            setIsPlaying(true);
-            sessionStorage.setItem('wedding_audio_playing', 'true');
-          })
-          .catch((err) => {
-            console.warn('Audio MP3 play prevented, starting Web Audio synth:', err);
-            startAmbientSynth();
-            setIsPlaying(true);
-            sessionStorage.setItem('wedding_audio_playing', 'true');
-          });
-      } else {
-        startAmbientSynth();
-        setIsPlaying(true);
-        sessionStorage.setItem('wedding_audio_playing', 'true');
-      }
+  const startPlayback = () => {
+    isPlayingRef.current = true;
+    const audio = audioRef.current;
+    if (audio && audioAvailableRef.current) {
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          sessionStorage.setItem('wedding_audio_playing', 'true');
+        })
+        .catch((err) => {
+          console.warn('Audio MP3 play prevented, starting Web Audio synth:', err);
+          startAmbientSynth();
+          setIsPlaying(true);
+          sessionStorage.setItem('wedding_audio_playing', 'true');
+        });
     } else {
-      const audio = audioRef.current;
-      if (audio) audio.pause();
-      stopAmbientSynth();
-      setIsPlaying(false);
-      sessionStorage.setItem('wedding_audio_playing', 'false');
+      startAmbientSynth();
+      setIsPlaying(true);
+      sessionStorage.setItem('wedding_audio_playing', 'true');
     }
   };
+
+  const stopPlayback = () => {
+    isPlayingRef.current = false;
+    const audio = audioRef.current;
+    if (audio) audio.pause();
+    stopAmbientSynth();
+    setIsPlaying(false);
+    sessionStorage.setItem('wedding_audio_playing', 'false');
+  };
+
+  const toggleMusic = () => {
+    if (!isPlaying) {
+      startPlayback();
+    } else {
+      stopPlayback();
+    }
+  };
+
+  // Expose the stop function so the video player can pause background music
+  useEffect(() => {
+    stopMusicExternal = stopPlayback;
+    return () => {
+      stopMusicExternal = null;
+    };
+  }, [stopPlayback]);
 
   return (
     <>

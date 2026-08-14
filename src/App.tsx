@@ -21,6 +21,7 @@ import { MusicPlayer } from './components/MusicPlayer';
 import { Footer } from './components/Footer';
 import { CursorGlow } from './components/CursorGlow';
 import { PhotoMarquee } from './components/PhotoMarquee';
+import { WeddingVideo } from './components/WeddingVideo';
 import { WeddingFun } from './components/WeddingFun';
 import { AIWishGenerator } from './components/AIWishGenerator';
 import { HeritageSection } from './components/HeritageSection';
@@ -61,6 +62,9 @@ export const App: React.FC = () => {
 
         {/* Scrolling Photo Marquee */}
         <PhotoMarquee />
+
+        {/* Cinematic Wedding Film */}
+        <WeddingVideo />
 
         {/* Funny Wedding Survival Guide */}
         <WeddingFun />
