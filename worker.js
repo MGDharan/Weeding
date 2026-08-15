@@ -7,6 +7,14 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
 
+    if (pathname === '/api/health') {
+      return Response.json({
+        ok: true,
+        resend: Boolean(env.RESEND_API_KEY),
+        nvidia: Boolean(env.NVIDIA_API_KEY || env.NVAPI_KEY),
+        assets: Boolean(env.ASSETS),
+      });
+    }
     if (pathname === '/api/ai/wish' && request.method === 'POST') {
       return handleWish(request, env);
     }
