@@ -18,6 +18,35 @@ const suggestions = [
   'Something short and sweet',
 ];
 
+const FALLBACK_SETS: Record<string, ((name: string, target: string) => string)[]> = {
+  heartfelt: [
+    (name, target) => `Dear ${name}, as ${target} begin their sacred journey together, may their home overflow with love, their hearts with laughter, and their lives with endless blessings. Wishing you both a lifetime of happiness on your wedding day!`,
+    (name, target) => `${name} sends warmest wishes to ${target} — may the love you share today grow deeper with every passing year. Congratulations on your beautiful union!`,
+  ],
+  funny: [
+    (name, target) => `Dear ${name}, since the Doctor and the Pharmacist are finally tying the knot, remember: marriage is the only medicine with no side effects — just pure happiness! Congratulations to ${target}!`,
+    (name, target) => `${name} has a prescription for you: take two happy hearts daily, mix with laughter, and you'll live happily ever after. Congratulations ${target}!`,
+  ],
+  poetic: [
+    (name, target) => `As two rivers meet and become one, may the lives of ${target} flow together in perfect harmony — bound by love, blessed by the stars, and written in the poetry of forever.`,
+    (name, target) => `Dear ${name}, beneath the golden sky, two souls unite as one. May the blessings of the universe shower upon ${target} and light their path forever.`,
+  ],
+  royal: [
+    (name, target) => `In honour of the magnificent union of ${target}, ${name} extends the grandest of blessings — may their kingdom be built on love, crowned with joy, and reign for eternity.`,
+    (name, target) => `A royal celebration for a royal couple! ${name} wishes ${target} a reign of love, a court of joy, and a kingdom of endless happiness.`,
+  ],
+};
+
+const localFallbackWish = (guest: string, style: string, customPrompt?: string): string => {
+  const name = guest === 'a dear guest' ? 'dear guest' : guest.split(' ')[0];
+  const target = 'Praveena and Muralidharan';
+  const pool =
+    customPrompt && customPrompt.toLowerCase().includes('fun')
+      ? FALLBACK_SETS.funny
+      : FALLBACK_SETS[style] || FALLBACK_SETS.heartfelt;
+  return pool[Math.floor(Math.random() * pool.length)](name, target);
+};
+
 export const AIWishGenerator: React.FC = () => {
   const [guestName, setGuestName] = useState('');
   const [style, setStyle] = useState('heartfelt');
@@ -53,7 +82,8 @@ export const AIWishGenerator: React.FC = () => {
       const data = await res.json();
       setWish(data.wish);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setWish(localFallbackWish(guestName.trim() || 'a dear guest', style, customPrompt));
+      setError('AI service is temporarily unavailable — here is a wish written for you instead.');
     } finally {
       setLoading(false);
     }

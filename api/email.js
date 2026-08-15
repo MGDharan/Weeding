@@ -93,9 +93,8 @@ async function sendViaSendGrid(env, rsvp) {
   return { ok: res.ok, text: await res.text() };
 }
 
-export async function onRequestPost(context) {
-  const rsvp = await context.request.json().catch(() => ({}));
-  const env = context.env || {};
+export async function handleEmail(request, env) {
+  const rsvp = await request.json().catch(() => ({}));
 
   if (!rsvp.email || !String(rsvp.email).includes('@')) {
     return Response.json({ error: 'A valid email address is required' }, { status: 400 });

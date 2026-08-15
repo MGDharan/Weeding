@@ -13,7 +13,7 @@ const STYLE_GUIDE = {
 
 function fallbackWish(guest, eventName, tone, customPrompt) {
   const name = guest === 'a dear guest' ? guest : guest.split(' ')[0];
-  const target = `Praveena and Muralidharan`;
+  const target = 'Praveena and Muralidharan';
 
   const sets = {
     heartfelt: [
@@ -41,11 +41,10 @@ function fallbackWish(guest, eventName, tone, customPrompt) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-export async function onRequestPost(context) {
-  const body = await context.request.json().catch(() => ({}));
+export async function handleWish(request, env) {
+  const body = await request.json().catch(() => ({}));
   const { guestName, style, event, customPrompt } = body || {};
 
-  const env = context.env || {};
   const NVIDIA_API_KEY = env.NVIDIA_API_KEY || env.NVAPI_KEY || '';
 
   const coupleNames = 'Praveena (the bride) & Muralidharan (the groom)';
