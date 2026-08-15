@@ -2,265 +2,91 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Music } from 'lucide-react';
 import { weddingConfig } from '../config/weddingData';
 
-// Raag Yaman scale (Sa Re Ga Ma# Pa Dha Ni Sa'), base A3 = 220 Hz
-const RAGA_FREQS = [220, 247.5, 275, 293.33, 330, 371.25, 412.5, 440];
-
-interface SynthNode {
-  stop: () => void;
-}
-
-// Global hook so other components (e.g. the video player) can pause/stop the
-// background music. Set by the MusicPlayer on mount.
-let stopMusicExternal: (() => void) | null = null;
-export const stopBackgroundMusic = (): void => {
-  stopMusicExternal?.();
-};
-
 export const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [audioAvailable, setAudioAvailable] = useState<boolean>(false);
-  const [audioChecked, setAudioChecked] = useState<boolean>(false);
+  const [wasAutoPlayBlocked, setWasAutoPlayBlocked] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const synthCtxRef = useRef<AudioContext | null>(null);
-  const synthMasterRef = useRef<GainNode | null>(null);
-  const synthNodesRef = useRef<SynthNode[]>([]);
-  const loopTimerRef = useRef<number | null>(null);
-  const stoppedRef = useRef(false);
-  const autoStartedRef = useRef(false);
-  const isPlayingRef = useRef(false);
-  const audioAvailableRef = useRef(false);
+  const [scrollStarted, setScrollStarted] = useState<boolean>(false);
 
+  // Detect whether the audio file exists
   useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
-
-  useEffect(() => {
-    audioAvailableRef.current = audioAvailable;
-  }, [audioAvailable]);
-
-  // Detect whether the audio file actually exists on the server
-  useEffect(() => {
-    let cancelled = false;
     const audio = audioRef.current;
     if (!audio) return;
 
-    const markUnavailable = () => {
-      if (!cancelled) {
-        setAudioAvailable(false);
-        setAudioChecked(true);
-      }
-    };
-    const markAvailable = () => {
-      if (!cancelled) {
-        setAudioAvailable(true);
-        setAudioChecked(true);
-      }
+    const onCanPlay = () => {
+      setAudioAvailable(true);
     };
 
-    audio.addEventListener('error', markUnavailable, { once: true });
-    audio.addEventListener('canplaythrough', markAvailable, { once: true });
-    // Force the browser to probe the resource so the events fire
+    const onError = () => {
+      setAudioAvailable(false);
+    };
+
+    audio.addEventListener('canplay', onCanPlay, { once: true });
+    audio.addEventListener('error', onError, { once: true });
     audio.load();
-
-    return () => {
-      cancelled = true;
-      audio.removeEventListener('error', markUnavailable);
-      audio.removeEventListener('canplaythrough', markAvailable);
-    };
   }, []);
 
-  // Auto-play background music on the first user interaction (browsers block
-  // audio before a user gesture). Also respect the persisted preference.
+  const [audioAvailable, setAudioAvailable] = useState<boolean>(false);
+
+  // Attempt automatic playback on mount (browsers may block this)
   useEffect(() => {
-    const stored = sessionStorage.getItem('wedding_audio_playing');
-    if (stored === 'false') return;
-
-    const start = () => {
-      if (autoStartedRef.current || isPlayingRef.current) return;
-      autoStartedRef.current = true;
-      window.removeEventListener('pointerdown', start);
-      window.removeEventListener('keydown', start);
-      window.removeEventListener('touchstart', start);
-      startPlayback();
-    };
-
-    window.addEventListener('pointerdown', start, { once: true });
-    window.addEventListener('keydown', start, { once: true });
-    window.addEventListener('touchstart', start, { once: true });
-
-    return () => {
-      window.removeEventListener('pointerdown', start);
-      window.removeEventListener('keydown', start);
-      window.removeEventListener('touchstart', start);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const playNote = (ctx: AudioContext, dest: AudioNode, freq: number, start: number, dur: number) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const shimmer = ctx.createOscillator();
-    const shimmerGain = ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    shimmer.type = 'sine';
-    shimmer.frequency.value = 5.5;
-    shimmerGain.gain.value = 2.5;
-    shimmer.connect(shimmerGain);
-    shimmerGain.connect(osc.frequency);
-    shimmer.start(start);
-    shimmer.stop(start + dur + 0.1);
-
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.09, start + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-    osc.connect(gain);
-    gain.connect(dest);
-    osc.start(start);
-    osc.stop(start + dur + 0.1);
-
-    synthNodesRef.current.push({
-      stop: () => {
-        try {
-          osc.stop();
-          shimmer.stop();
-        } catch {
-          /* not started yet */
-        }
-      },
-    });
-  };
-
-  // Ambient melody loop — a gentle ascending/descending raga arpeggio
-  const scheduleMelodyLoop = (ctx: AudioContext, master: GainNode) => {
-    const pattern = [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7];
-    const stepDur = 0.95;
-    const loopDur = pattern.length * stepDur;
-
-    const scheduleIteration = () => {
-      if (stoppedRef.current) return;
-      let t = ctx.currentTime + 0.1;
-      pattern.forEach((i) => {
-        playNote(ctx, master, RAGA_FREQS[i], t, stepDur * 1.8);
-        t += stepDur;
-      });
-      loopTimerRef.current = window.setTimeout(scheduleIteration, loopDur * 1000);
-    };
-
-    scheduleIteration();
-  };
-
-  const startAmbientSynth = () => {
-    try {
-      stoppedRef.current = false;
-      if (!synthCtxRef.current) {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        synthCtxRef.current = new AudioCtx();
-      }
-      const ctx = synthCtxRef.current;
-      if (ctx.state === 'suspended') {
-        void ctx.resume();
-      }
-
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(0.9, ctx.currentTime);
-      master.connect(ctx.destination);
-      synthMasterRef.current = master;
-
-      // Warm drone under the melody (Sa & Pa)
-      [RAGA_FREQS[0], RAGA_FREQS[4]].forEach((f) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = f;
-        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.035, ctx.currentTime + 1.2);
-        osc.connect(gain);
-        gain.connect(master);
-        osc.start();
-        synthNodesRef.current.push({
-          stop: () => {
-            try {
-              osc.stop();
-            } catch {
-              /* not started yet */
-            }
-          },
-        });
-      });
-
-      scheduleMelodyLoop(ctx, master);
-    } catch (e) {
-      console.warn('Web Audio synth initialized with exception:', e);
-    }
-  };
-
-  const stopAmbientSynth = () => {
-    stoppedRef.current = true;
-    if (loopTimerRef.current !== null) {
-      window.clearTimeout(loopTimerRef.current);
-      loopTimerRef.current = null;
-    }
-    synthNodesRef.current.forEach((node) => node.stop());
-    synthNodesRef.current = [];
-    if (synthMasterRef.current && synthCtxRef.current) {
-      const ctx = synthCtxRef.current;
-      try {
-        synthMasterRef.current.gain.setValueAtTime(0.0001, ctx.currentTime);
-      } catch {
-        /* context may be closed */
-      }
-    }
-    synthMasterRef.current = null;
-  };
-
-  const startPlayback = () => {
-    isPlayingRef.current = true;
     const audio = audioRef.current;
-    if (audio && audioAvailableRef.current) {
+    if (!audio) return;
+
+    const playAutomatically = () => {
       audio
         .play()
         .then(() => {
           setIsPlaying(true);
-          sessionStorage.setItem('wedding_audio_playing', 'true');
+          setWasAutoPlayBlocked(false);
         })
         .catch((err) => {
-          console.warn('Audio MP3 play prevented, starting Web Audio synth:', err);
-          startAmbientSynth();
-          setIsPlaying(true);
-          sessionStorage.setItem('wedding_audio_playing', 'true');
+          setWasAutoPlayBlocked(true);
+          console.log('Auto-play blocked by browser:', err);
         });
-    } else {
-      startAmbientSynth();
-      setIsPlaying(true);
-      sessionStorage.setItem('wedding_audio_playing', 'true');
-    }
-  };
+    };
 
-  const stopPlayback = () => {
-    isPlayingRef.current = false;
+    playAutomatically();
+  }, []);
+
+  // If auto-play was blocked, listen for scroll gestures to start music
+  useEffect(() => {
+    if (!wasAutoPlayBlocked) return;
+    if (scrollStarted) return;
+
     const audio = audioRef.current;
-    if (audio) audio.pause();
-    stopAmbientSynth();
-    setIsPlaying(false);
-    sessionStorage.setItem('wedding_audio_playing', 'false');
-  };
+    if (!audio) return;
+
+const handleScroll = () => {
+      setScrollStarted(true);
+      // Remove all scroll listeners
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+      window.removeEventListener('mousemove', handleScroll);
+
+      audio.play().then(() => setIsPlaying(true));
+    };
+
+    // Add scroll listeners for both mouse and touch
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('touchmove', handleScroll);
+    window.addEventListener('mousemove', handleScroll);
+  }, [wasAutoPlayBlocked, scrollStarted]);
 
   const toggleMusic = () => {
-    if (!isPlaying) {
-      startPlayback();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
     } else {
-      stopPlayback();
+      audio.currentTime = 0;
+      audio.play().then(() => setIsPlaying(true)).catch(() => {
+        // play() was prevented; we don't fall back to synth
+      });
     }
   };
-
-  // Expose the stop function so the video player can pause background music
-  useEffect(() => {
-    stopMusicExternal = stopPlayback;
-    return () => {
-      stopMusicExternal = null;
-    };
-  }, [stopPlayback]);
 
   return (
     <>
@@ -268,13 +94,8 @@ export const MusicPlayer: React.FC = () => {
         ref={audioRef}
         loop
         preload="auto"
-        onError={() => {
-          if (audioChecked) setAudioAvailable(false);
-        }}
-      >
-        <source src={weddingConfig.music.audioUrl} type="audio/mpeg" />
-        <source src={weddingConfig.music.audioUrlFallback} type="audio/mp4; codecs=mp4a.40.2" />
-      </audio>
+        src={weddingConfig.music.audioUrl}
+      />
 
       {/* Floating Music Control Button */}
       <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-3">

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { weddingConfig } from '../config/weddingData';
 import { OrnamentalDivider } from './OrnamentalDivider';
-import { stopBackgroundMusic } from './MusicPlayer';
 
 export const WeddingVideo: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,7 +15,6 @@ export const WeddingVideo: React.FC = () => {
     if (!video) return;
 
     if (video.paused) {
-      stopBackgroundMusic();
       video.muted = false;
       setIsMuted(false);
       video

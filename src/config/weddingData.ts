@@ -30,6 +30,12 @@ export interface GalleryPhoto {
 }
 
 export interface WeddingConfig {
+  music: {
+    title: string;
+    subtitle: string;
+    audioUrl: string;
+    audioUrlFallback: string;
+  };
   couple: {
     brideName: string;
     brideFullName: string;
@@ -78,12 +84,6 @@ export interface WeddingConfig {
   story: Milestone[];
   events: WeddingEvent[];
   gallery: GalleryPhoto[];
-  music: {
-    title: string;
-    subtitle: string;
-    audioUrl: string;
-    audioUrlFallback: string;
-  };
   rsvp: {
     deadline: string;
     dietaryOptions: string[];

@@ -17,13 +17,13 @@ import { FamilySection } from './components/FamilySection';
 import { RSVPForm } from './components/RSVPForm';
 import { VenueSection } from './components/VenueSection';
 import { WeddingMessage } from './components/WeddingMessage';
-import { MusicPlayer } from './components/MusicPlayer';
 import { Footer } from './components/Footer';
 import { CursorGlow } from './components/CursorGlow';
 import { PhotoMarquee } from './components/PhotoMarquee';
 import { WeddingVideo } from './components/WeddingVideo';
 import { WeddingFun } from './components/WeddingFun';
 import { AIWishGenerator } from './components/AIWishGenerator';
+import { MusicPlayer } from './components/MusicPlayer';
 import { HeritageSection } from './components/HeritageSection';
 
 export const App: React.FC = () => {
@@ -81,11 +81,11 @@ export const App: React.FC = () => {
         <WeddingMessage />
       </main>
 
-      {/* Floating Audio Music Player */}
-      <MusicPlayer />
-
       {/* macOS-Style Dock Navigation */}
       {!preloading && <Dock />}
+
+      {/* Floating Audio Music Player */}
+      <MusicPlayer />
 
       {/* Footer */}
       <Footer />
