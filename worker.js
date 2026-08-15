@@ -12,6 +12,7 @@ export default {
         ok: true,
         resend: Boolean(env.RESEND_API_KEY),
         nvidia: Boolean(env.NVIDIA_API_KEY || env.NVAPI_KEY),
+        resendFrom: Boolean(env.RESEND_FROM),
         assets: Boolean(env.ASSETS),
       });
     }
