@@ -4,9 +4,11 @@ import { Calendar, Clock, MapPin, ExternalLink, Heart, CalendarPlus } from 'luci
 import { weddingConfig } from '../config/weddingData';
 import { OrnamentalDivider } from './OrnamentalDivider';
 import { downloadICS } from '../utils/calendar';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 
 export const MainCeremonySpotlight: React.FC = () => {
   const ceremony = weddingConfig.mainCeremony;
+  const isDesktop = useIsDesktop();
 
   const handleAddToCalendar = () => {
     downloadICS({
@@ -54,8 +56,8 @@ export const MainCeremonySpotlight: React.FC = () => {
 
           {/* Main Ceremony Highlight Details */}
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? 40 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9 }}
             className="lg:col-span-6 order-1 lg:order-2 space-y-6 text-center lg:text-left"

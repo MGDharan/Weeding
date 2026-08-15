@@ -21,10 +21,10 @@ export const CinematicReveal: React.FC = () => {
   return (
     <section
       ref={containerRef}
-      className="relative h-[130vh] bg-luxury-dark overflow-hidden"
+      className="relative h-[130svh] bg-luxury-dark overflow-hidden"
     >
       {/* Sticky Viewport */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* Zooming Cinematic Background */}
         <motion.div
           style={{ scale }}

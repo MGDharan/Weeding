@@ -117,3 +117,11 @@
 .img-zoom-container:hover img {
   transform: scale(1.06);
 }
+
+/* On very short screens the preloader's welcome couple would crowd the
+   "Enter" button, so hide it to keep the invitation clean and tappable. */
+@media (max-height: 620px) {
+  .preloader-couple {
+    display: none;
+  }
+}

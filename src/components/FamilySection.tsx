@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { weddingConfig } from '../config/weddingData';
 import { OrnamentalDivider } from './OrnamentalDivider';
 import { Heart, Sparkles } from 'lucide-react';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 
 export const FamilySection: React.FC = () => {
   const families = weddingConfig.families;
+  const isDesktop = useIsDesktop();
 
   return (
     <section className="py-20 sm:py-28 bg-gradient-to-b from-cream-100 via-cream-200 to-cream-100 relative overflow-hidden">
@@ -36,8 +38,8 @@ export const FamilySection: React.FC = () => {
           
           {/* Bride Family Card */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? -30 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="p-8 sm:p-10 rounded-3xl glass-card border border-gold/40 text-center relative group hover:border-gold hover:shadow-2xl transition-all duration-500"
@@ -77,8 +79,8 @@ export const FamilySection: React.FC = () => {
 
           {/* Groom Family Card */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? 30 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="p-8 sm:p-10 rounded-3xl glass-card border border-gold/40 text-center relative group hover:border-gold hover:shadow-2xl transition-all duration-500"

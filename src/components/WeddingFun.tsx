@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { weddingConfig } from '../config/weddingData';
 import { OrnamentalDivider } from './OrnamentalDivider';
 import { Laugh, Stethoscope, Pill, Music, Utensils, Camera, Wine, ShieldCheck, Brain } from 'lucide-react';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 
 interface Rule {
   icon: React.ReactNode;
@@ -51,6 +52,7 @@ const funFacts = [
 ];
 
 export const WeddingFun: React.FC = () => {
+  const isDesktop = useIsDesktop();
   return (
     <section className="py-20 sm:py-28 bg-gradient-to-b from-maroon-deep via-maroon-dark to-maroon-deep text-cream-100 relative overflow-hidden">
       {/* Background Mandala */}
@@ -117,8 +119,8 @@ export const WeddingFun: React.FC = () => {
               {funFacts.map((fact, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, x: isDesktop ? -30 : 0, y: isDesktop ? 0 : 20 }}
+                  whileInView={{ opacity: 1, x: 0, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: i * 0.12 }}
                   className="flex items-start gap-4"

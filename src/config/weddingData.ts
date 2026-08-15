@@ -82,6 +82,7 @@ export interface WeddingConfig {
     title: string;
     subtitle: string;
     audioUrl: string;
+    audioUrlFallback: string;
   };
   rsvp: {
     deadline: string;
@@ -250,7 +251,8 @@ export const weddingConfig: WeddingConfig = {
   music: {
     title: "Sacred Union Melody",
     subtitle: "Traditional Nadaswaram & Thavil Harmony",
-    audioUrl: "/audio/wedding-theme.m4a"
+    audioUrl: "/audio/wedding-theme.mp3",
+    audioUrlFallback: "/audio/wedding-theme.m4a"
   },
   rsvp: {
     deadline: "August 20, 2026",

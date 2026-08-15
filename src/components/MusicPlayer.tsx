@@ -266,13 +266,15 @@ export const MusicPlayer: React.FC = () => {
     <>
       <audio
         ref={audioRef}
-        src={weddingConfig.music.audioUrl}
         loop
         preload="auto"
         onError={() => {
           if (audioChecked) setAudioAvailable(false);
         }}
-      />
+      >
+        <source src={weddingConfig.music.audioUrl} type="audio/mpeg" />
+        <source src={weddingConfig.music.audioUrlFallback} type="audio/mp4; codecs=mp4a.40.2" />
+      </audio>
 
       {/* Floating Music Control Button */}
       <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-3">

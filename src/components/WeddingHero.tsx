@@ -22,7 +22,7 @@ export const WeddingHero: React.FC = () => {
     <section
       id="home"
       ref={sectionRef}
-      className="relative min-h-screen w-full overflow-hidden flex items-center justify-center"
+      className="relative min-h-svh w-full overflow-hidden flex items-center justify-center"
     >
       {/* Ken Burns Animated Background Image with Parallax */}
       <motion.div style={{ scale: bgScale, y: bgY }} className="absolute inset-0 z-0 overflow-hidden">

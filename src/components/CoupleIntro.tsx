@@ -5,8 +5,11 @@ import { OrnamentalDivider } from './OrnamentalDivider';
 import { Heart, Stethoscope, Pill } from 'lucide-react';
 import { Parallax } from './Parallax';
 import { TiltCard } from './TiltCard';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 
 export const CoupleIntro: React.FC = () => {
+  const isDesktop = useIsDesktop();
+
   return (
     <section className="py-20 sm:py-28 bg-gradient-to-b from-cream-100 via-cream-50 to-cream-200 relative overflow-hidden">
       {/* Background Subtle Mandala */}
@@ -37,8 +40,8 @@ export const CoupleIntro: React.FC = () => {
           {/* Framed Couple Portrait */}
           <Parallax speed={0.15} className="lg:col-span-6 flex justify-center">
             <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, x: isDesktop ? -40 : 0, y: isDesktop ? 0 : 30 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
             >
@@ -70,8 +73,8 @@ export const CoupleIntro: React.FC = () => {
 
           {/* Emotional Narrative */}
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? 40 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9 }}
             className="lg:col-span-6 text-center lg:text-left space-y-6"

@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { MapPin, Navigation, ExternalLink, Phone, Mail } from 'lucide-react';
 import { weddingConfig } from '../config/weddingData';
 import { OrnamentalDivider } from './OrnamentalDivider';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 
 export const VenueSection: React.FC = () => {
   const venue = weddingConfig.venue;
+  const isDesktop = useIsDesktop();
 
   return (
     <section id="venue" className="py-20 sm:py-28 bg-cream-100 relative overflow-hidden">
@@ -36,8 +38,8 @@ export const VenueSection: React.FC = () => {
           
           {/* Address & Details Card */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? -30 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="lg:col-span-5 p-8 sm:p-10 rounded-3xl bg-maroon-dark text-cream-100 border border-gold flex flex-col justify-between shadow-2xl"
@@ -107,8 +109,8 @@ export const VenueSection: React.FC = () => {
 
           {/* Embedded Map Card */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: isDesktop ? 30 : 0, y: isDesktop ? 0 : 30 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="lg:col-span-7 rounded-3xl overflow-hidden shadow-2xl border border-gold/40 min-h-[380px] sm:min-h-[450px]"
