@@ -9,5 +9,4 @@ not_found_handling = "single-page-application"
 run_worker_first = true
 
 [vars]
-RESEND_FROM = "mgdharan7@gmail.com"
 NVIDIA_API_KEY = "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"
